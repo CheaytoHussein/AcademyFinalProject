@@ -5,7 +5,7 @@
 <package format="3">
   <name>academy_robot_supervisor_msgs</name>
   <version>1.0.0</version>
-  <description>Message definition for the Robotnik Supervisor</description>
+  <description>Message definition for the Academy Robot Supervisor</description>
   <maintainer email="jad.elhajj@inmind.ai">Jad El Hajj</maintainer>
   <license>Apache-2.0</license>
   <author email="jad.elhajj@inmind.ai">Jad El Hajj</author>

@@ -5,7 +5,7 @@
 <package format="3">
   <name>academy_robot_navigation_msgs</name>
   <version>1.0.0</version>
-  <description>Message definitions for the Robotnik Navigation Stack</description>
+  <description>Message definitions for the Academy Robot Navigation Stack</description>
   <maintainer email="jad.elhajj@inmind.ai">Jad El Hajj</maintainer>
   <license>Apache-2.0</license>
   <author email="jad.elhajj@inmind.ai">Jad El Hajj</author>

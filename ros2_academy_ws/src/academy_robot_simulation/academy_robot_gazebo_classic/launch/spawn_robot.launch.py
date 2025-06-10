@@ -216,7 +216,7 @@ def generate_launch_description():
     academy_robot_controller = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["academy_robot_base_controller"],
+        arguments=["robotnik_base_controller"],
         output="screen",
         emulate_tty=True,
         namespace=params["namespace"],

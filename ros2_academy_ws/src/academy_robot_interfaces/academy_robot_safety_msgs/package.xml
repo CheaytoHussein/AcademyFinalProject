@@ -5,7 +5,7 @@
 <package format="3">
   <name>academy_robot_safety_msgs</name>
   <version>1.0.0</version>
-  <description>Message definition for the Robotnik Safety System</description>
+  <description>Message definition for the Academy Robot Safety System</description>
   <maintainer email="jad.elhajj@inmind.ai">Jad El Hajj</maintainer>
   <license>Apache-2.0</license>
   <author email="jad.elhajj@inmind.ai">Jad El Hajj</author>

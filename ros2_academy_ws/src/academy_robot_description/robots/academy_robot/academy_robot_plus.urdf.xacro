@@ -44,8 +44,7 @@
     sim_gazebo="$(arg gazebo_classic)" sim_ignition="$(arg gazebo_ignition)">
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:ur_robot>
-
-  <!-- PENDIENTE DE ACTUALIZAR ROBOTNIK_SENSORS -->
+  <!-- PENDIENTE DE ACTUALIZAR Academy Robot_SENSORS -->
   <!-- IMU -->
   <xacro:sensor_vectornav frame_prefix="$(arg prefix)vectornav_" parent="$(arg prefix)base_link" node_namespace="$(arg namespace)"
     gazebo_classic="$(arg gazebo_classic)" gazebo_ignition="$(arg gazebo_ignition)">

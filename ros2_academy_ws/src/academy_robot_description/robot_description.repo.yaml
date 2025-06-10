@@ -1,6 +1,0 @@
----
-repositories:
-  src/academy_robot_sensors:
-    type: git
-    url: https://github.com/RobotnikAutomation/academy_robot_sensors.git
-    version: ros2-devel

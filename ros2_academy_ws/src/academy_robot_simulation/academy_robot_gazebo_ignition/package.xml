@@ -14,7 +14,7 @@
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
   <exec_depend>academy_robot_sensors</exec_depend>
-  <exec_depend>academy_robot_msgs</exec_depend>
+  <exec_depend>academy_robot_common_msgs</exec_depend>
   <exec_depend>academy_robot_common</exec_depend>
   <exec_depend>academy_robot_description</exec_depend>
   <exec_depend>ur_description</exec_depend>

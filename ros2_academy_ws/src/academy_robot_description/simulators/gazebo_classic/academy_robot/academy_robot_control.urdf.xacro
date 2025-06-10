@@ -37,7 +37,7 @@
       <plugin name="planar_move" filename="libgazebo_ros_planar_move.so">
         <ros>
           <!-- Remap the default topic -->
-          <remapping>cmd_vel:=/robot/academy_robot_base_controller/cmd_vel</remapping>
+          <remapping>cmd_vel:=/robot/robotnik_base_controller/cmd_vel</remapping>
         </ros>
         <update_rate>100</update_rate>
         <publish_rate>10</publish_rate>

@@ -5,7 +5,7 @@
 <package format="3">
   <name>academy_robot_io_msgs</name>
   <version>1.0.0</version>
-  <description>Message definitions for the Robotnik I/O stack</description>
+  <description>Message definitions for the Academy Robot I/O stack</description>
   <maintainer email="jad.elhajj@inmind.ai">Jad El Hajj</maintainer>
   <license>Apache-2.0</license>
   <author email="jad.elhajj@inmind.ai">Jad El Hajj</author>
