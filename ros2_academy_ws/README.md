@@ -69,7 +69,13 @@ sudo apt install -y \
   ros-humble-ament-lint-auto \
   ros-humble-ament-cmake-python \
   ros-humble-launch-testing \
-  ros-humble-ament-cmake-pytest
+  ros-humble-ament-cmake-pytest \
+  ros-humble-rqt-joint-trajectory-controller 
+```
+**Install the robot controller:**
+```sh
+cd ros2_academy_ws/src/academy_robot_simulation/debs
+sudo dpkg -i ros-humble-robotnik-controllers_0.0.0-20250407.104325-b0a866a_amd64.deb
 ```
 
 **Other recommended tools:**
