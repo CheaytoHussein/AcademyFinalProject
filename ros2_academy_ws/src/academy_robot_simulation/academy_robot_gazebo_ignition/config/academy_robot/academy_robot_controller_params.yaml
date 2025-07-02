@@ -29,6 +29,7 @@
         - robot_arm_wrist_1_joint
         - robot_arm_wrist_2_joint
         - robot_arm_wrist_3_joint
+        - robotiq_85_left_knuckle_joint
 
       command_interfaces:
         - position

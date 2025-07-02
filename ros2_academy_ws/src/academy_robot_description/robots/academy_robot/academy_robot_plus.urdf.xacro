@@ -80,4 +80,13 @@
       <xacro:academy_robot_base_hw_controller />
     </xacro:unless>
   </xacro:unless>
+  <xacro:arg name="use_fake_hardware" default="true" />
+    <xacro:arg name="com_port" default="/dev/ttyUSB0" />
+
+    <!-- Import macros -->
+  <xacro:include filename="$(find academy_robot_description)/urdf/robotiq_gripper_macro.xacro" />
+  
+  <xacro:robotiq_gripper name="RobotiqGripperHardwareInterface" prefix="" parent="robot_arm_wrist_3_link" use_fake_hardware="$(arg use_fake_hardware)" com_port="$(arg com_port)" sim_gazebo="$(arg gazebo_ignition)">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:robotiq_gripper>
 </robot>
