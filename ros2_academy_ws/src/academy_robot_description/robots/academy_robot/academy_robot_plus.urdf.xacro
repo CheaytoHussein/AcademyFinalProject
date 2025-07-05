@@ -81,7 +81,7 @@
     </xacro:unless>
   </xacro:unless>
   <xacro:arg name="use_fake_hardware" default="true" />
-    <xacro:arg name="com_port" default="/dev/ttyUSB0" />
+  <xacro:arg name="com_port" default="/dev/ttyUSB0" />
 
     <!-- Import macros -->
   <xacro:include filename="$(find academy_robot_description)/urdf/robotiq_gripper_macro.xacro" />

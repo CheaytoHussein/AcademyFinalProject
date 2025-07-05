@@ -229,6 +229,28 @@ def generate_launch_description():
     )
     ld.add_action(init_joint_trajectory_controller)
 
+    gripper_trajectory_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["gripper_trajectory_controller"],
+        output="screen",
+        emulate_tty=True,
+        namespace=params["namespace"],
+        condition=IfCondition(params["has_arm"]),
+    )
+
+    init_gripper_trajectory_controller = RegisterEventHandler(
+        OnProcessExit(
+            target_action=joint_trajectory_controller,
+            on_exit=[
+                LogInfo(msg="Arm trajectory controller spawned"),
+                gripper_trajectory_controller,
+            ],
+        )
+    )
+    ld.add_action(init_gripper_trajectory_controller)
+
+
     academy_robot_controller = Node(
         package="controller_manager",
         executable="spawner",
