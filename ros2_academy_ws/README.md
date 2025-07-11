@@ -44,8 +44,17 @@ ros2_academy_ws/
 - **OS:** Ubuntu 22.04
 - **ROS 2:** Humble Hawksbill
 
-### System Dependencies
+### System Dependencies (2 Ways)
 
+#### 1. Dockerized Application (Recommended)
+
+The recommended way to build and run the application executables is using the docker container. 
+Follow [docker readme](docker/README.md) for full docker setup.
+
+
+#### 2. Install Locally
+
+**ROS2 and other dependencies on your local Ubuntu machine:**
 Install ROS 2 Humble (see [ROS 2 installation guide](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html)).
 
 **Required ROS 2 packages:**
@@ -89,7 +98,7 @@ sudo rosdep init
 rosdep update
 ```
 
-## Installation
+**Installation**
 
 Clone this repository and initialize submodules if any:
 ```sh

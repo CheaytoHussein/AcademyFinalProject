@@ -6,6 +6,7 @@ This repository provides a Docker-based environment for ROS2 Humble and Gazebo I
 
 - [Docker](https://docs.docker.com/get-docker/) installed on your system.
 - [VS Code](https://code.visualstudio.com/) for development.
+- [ros2_academy_ws](https://github.com/Jad-ELHAJJ/academy_robotics) locally cloned.
 
 ## Building the Docker Image
 
