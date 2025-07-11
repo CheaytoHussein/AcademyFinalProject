@@ -36,3 +36,9 @@ To stop and remove the running container:
 docker stop academy_gazebo_ros2
 docker rm academy_gazebo_ros2
 ```
+
+## Start a shell for the container
+
+```sh
+docker exec -it academy_gazebo_ros2 /bin/bash
+```
