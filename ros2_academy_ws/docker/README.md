@@ -5,7 +5,6 @@ This repository provides a Docker-based environment for ROS2 Humble and Gazebo I
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) installed on your system.
-- [VS Code](https://code.visualstudio.com/) for development.
 - [ros2_academy_ws](https://github.com/Jad-ELHAJJ/academy_robotics) locally cloned.
 
 ## Building the Docker Image
@@ -34,12 +33,12 @@ If `ROS_DOMAIN_ID` is not set in your environment, the script will default it to
 To stop and remove the running container:
 
 ```sh
-docker stop academy_gazebo_ros2
-docker rm academy_gazebo_ros2
+docker stop academy_robotics
+docker rm academy_robotics
 ```
 
 ## Start a shell for the container
 
 ```sh
-docker exec -it academy_gazebo_ros2 /bin/bash
+docker exec -it academy_robotics /bin/bash
 ```

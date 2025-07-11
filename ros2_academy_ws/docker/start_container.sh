@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE_NAME="academy_gazebo_ros2"
+IMAGE_NAME="academy_robotics"
 IMAGE_TAG="latest"
 
 mkdir -p ~/.vscode-server-cache
@@ -29,6 +29,6 @@ docker run -it \
             -e "QT_X11_NO_MITSHM=1" \
             --ipc=host \
             -w /home/user/ros2_ws/ \
-            --name academy_gazebo_ros2 \
+            --name academy_robotics \
             ${IMAGE_NAME}:${IMAGE_TAG} \
             /bin/bash
