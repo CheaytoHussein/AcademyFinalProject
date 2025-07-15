@@ -55,6 +55,12 @@
           <color rgba="0.5 0.5 0.5 1" />
         </material>
       </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://academy_robot_description/meshes/bases/academy_robot/academy_robot_top_cover.stl" />
+        </geometry>
+      </collision>
     </link>
     <joint name="${prefix}top_cover_joint" type="fixed">
       <origin xyz="0.0 0 0.56162" rpy="0 0 0" />
