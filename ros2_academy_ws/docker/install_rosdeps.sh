@@ -14,3 +14,4 @@ apt-get install -y ros-humble-ros2-controllers
 apt-get install -y ros-humble-rqt-joint-trajectory-controller
 apt-get install -y ros-humble-joint-trajectory-controller
 apt-get install -y ros-humble-joint-state-broadcaster
+apt-get install -y ros-humble-moveit
