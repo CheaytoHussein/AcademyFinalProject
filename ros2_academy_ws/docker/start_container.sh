@@ -22,7 +22,7 @@ docker run -it \
             -v /home/$USER/.vscode-server-cache:/home/user/.vscode-server \
             -v /home/$USER/.ssh:/home/user/.ssh \
             -v /dev/input:/dev/input \
-            -v /home/$USER/Desktop/inmind/Academy/academy_robotics/ros2_academy_ws:/home/user/ros2_ws \
+            -v ../ros2_academy_ws:/home/user/ros2_ws \
             -e "DISPLAY=${DISPLAY}" \
             -e "ROS_DOMAIN_ID=${ROS_DOMAIN_ID}" \
             -e "NVIDIA_DRIVER_CAPABILITIES=all" \
