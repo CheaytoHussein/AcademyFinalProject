@@ -3,7 +3,7 @@
 
   <xacro:macro name="ur_ros2_control" params="
     name
-    use_fake_hardware:=false fake_sensor_commands:=false
+    use_fake_hardware:=true fake_sensor_commands:=false
     sim_gazebo:=false
     sim_ignition:=false
     headless_mode:=false
@@ -38,7 +38,8 @@
           <param name="calculate_dynamics">true</param>
         </xacro:if>
         <xacro:unless value="${use_fake_hardware or sim_gazebo or sim_ignition}">
-          <plugin>ur_robot_driver/URPositionHardwareInterface</plugin>
+          <!-- <plugin>ur_robot_driver/URPositionHardwareInterface</plugin> -->
+           <plugin>fake_components/GenericSystem</plugin>
           <param name="robot_ip">${robot_ip}</param>
           <param name="script_filename">${script_filename}</param>
           <param name="output_recipe_filename">${output_recipe_filename}</param>
