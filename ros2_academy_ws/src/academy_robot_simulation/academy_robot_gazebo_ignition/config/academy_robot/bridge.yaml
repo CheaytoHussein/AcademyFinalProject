@@ -31,10 +31,22 @@
   gz_type_name: "gz.msgs.Image"
   direction: GZ_TO_ROS
 
-
 # gz topic published by Sensors plugin (IMU)
 - ros_topic_name: "/imu/data"
   gz_topic_name: "/imu/data"
   ros_type_name: "sensor_msgs/msg/Imu"
   gz_type_name: "ignition.msgs.IMU"
+  direction: GZ_TO_ROS
+
+# Add these entries to bridge.yaml
+- ros_topic_name: "/robot/front_rgbd_camera/depth/image_raw"
+  gz_topic_name: "/robot/front_camera_depth/depth/image_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/robot/front_rgbd_camera/depth/camera_info"
+  gz_topic_name: "/robot/front_camera_depth/depth/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
   direction: GZ_TO_ROS
