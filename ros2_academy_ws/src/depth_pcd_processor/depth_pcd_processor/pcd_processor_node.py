@@ -8,7 +8,7 @@ import numpy as np
 import open3d as o3d
 from std_msgs.msg import Header
 import sensor_msgs_py.point_cloud2 as pc2
-import tf2_ros
+
 
 
 class PCDProcessorNode(Node):
@@ -22,10 +22,6 @@ class PCDProcessorNode(Node):
         # Initialize CV bridge for image conversion
         self.bridge = CvBridge()
         
-        # Initialize TF2 buffer and listener
-        self.tf_buffer = tf2_ros.Buffer()
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
-        
         # Camera parameters (will be updated from camera_info)
         self.camera_matrix = None
         
@@ -35,7 +31,6 @@ class PCDProcessorNode(Node):
         self.declare_parameter('point_cloud_topic', '/processed_point_cloud')
         self.declare_parameter('min_depth', 0.1)
         self.declare_parameter('max_depth', 10.0)
-        self.declare_parameter('target_frame', 'robot_base_footprint')
         self.declare_parameter('debug_mode', False)
         
         # Get parameters
@@ -44,7 +39,7 @@ class PCDProcessorNode(Node):
         self.point_cloud_topic = self.get_parameter('point_cloud_topic').value
         self.min_depth = self.get_parameter('min_depth').value
         self.max_depth = self.get_parameter('max_depth').value
-        self.target_frame = self.get_parameter('target_frame').value
+
         self.debug_mode = self.get_parameter('debug_mode').value
         
         # Subscribers
@@ -142,91 +137,17 @@ class PCDProcessorNode(Node):
                     self.get_logger().warn('No points generated from depth image')
                 return None
             
-            # Determine optical frame ID
-            if 'depth_frame' in header.frame_id:
-                optical_frame_id = header.frame_id.replace('depth_frame', 'depth_optical_frame')
-            elif 'depth_optical_frame' in header.frame_id:
-                optical_frame_id = header.frame_id
-            else:
-                optical_frame_id = header.frame_id
+            # Keep point cloud in the same frame as the depth image
+            cloud_header = Header()
+            cloud_header.stamp = header.stamp
+            cloud_header.frame_id = header.frame_id
+            cloud_msg = pc2.create_cloud_xyz32(cloud_header, points)
             
-            # Transform to target frame if needed
-            if optical_frame_id != self.target_frame:
-                try:
-                    transform = self.tf_buffer.lookup_transform(
-                        self.target_frame,
-                        optical_frame_id,
-                        header.stamp,
-                        timeout=rclpy.duration.Duration(seconds=0.1)
-                    )
-                    
-                    # Apply transformation
-                    transformed_points = self.transform_points(points, transform)
-                    
-                    # Create point cloud message
-                    cloud_header = Header()
-                    cloud_header.stamp = header.stamp
-                    cloud_header.frame_id = self.target_frame
-                    cloud_msg = pc2.create_cloud_xyz32(cloud_header, transformed_points)
-                    
-                    return cloud_msg
-                    
-                except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
-                    if self.debug_mode:
-                        self.get_logger().warn(f'TF transform failed: {str(e)}')
-                    # Fall back to optical frame
-                    cloud_header = Header()
-                    cloud_header.stamp = header.stamp
-                    cloud_header.frame_id = optical_frame_id
-                    cloud_msg = pc2.create_cloud_xyz32(cloud_header, points)
-                    return cloud_msg
-            else:
-                # No transformation needed
-                cloud_header = Header()
-                cloud_header.stamp = header.stamp
-                cloud_header.frame_id = optical_frame_id
-                cloud_msg = pc2.create_cloud_xyz32(cloud_header, points)
-                return cloud_msg
+            return cloud_msg
                 
         except Exception as e:
             self.get_logger().error(f'Error in depth processing: {str(e)}')
             return None
-    
-    def transform_points(self, points, transform):
-        """Transform points using TF2 transform."""
-        # Extract rotation and translation
-        rotation = transform.transform.rotation
-        translation = transform.transform.translation
-        
-        # Convert quaternion to rotation matrix
-        q = np.array([rotation.x, rotation.y, rotation.z, rotation.w])
-        rotation_matrix = self.quaternion_to_rotation_matrix(q)
-        
-        # Apply transformation to each point
-        transformed_points = []
-        for point in points:
-            rotated_point = rotation_matrix @ point
-            transformed_point = rotated_point + np.array([translation.x, translation.y, translation.z])
-            transformed_points.append(transformed_point)
-        
-        return np.array(transformed_points)
-    
-    def quaternion_to_rotation_matrix(self, q):
-        """Convert quaternion to rotation matrix."""
-        x, y, z, w = q
-        
-        # Normalize quaternion
-        norm = np.sqrt(x*x + y*y + z*z + w*w)
-        x, y, z, w = x/norm, y/norm, z/norm, w/norm
-        
-        # Convert to rotation matrix
-        R = np.array([
-            [1 - 2*y*y - 2*z*z, 2*x*y - 2*w*z, 2*x*z + 2*w*y],
-            [2*x*y + 2*w*z, 1 - 2*x*x - 2*z*z, 2*y*z - 2*w*x],
-            [2*x*z - 2*w*y, 2*y*z + 2*w*x, 1 - 2*x*x - 2*y*y]
-        ])
-        
-        return R
 
 
 def main(args=None):
