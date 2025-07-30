@@ -39,7 +39,7 @@ def generate_launch_description():
     arg = ExtendedArgument(
         name="namespace",
         description="Namespace",
-        default_value="robot",
+        default_value="",
         use_env=True,
         environment="NAMESPACE",
     )

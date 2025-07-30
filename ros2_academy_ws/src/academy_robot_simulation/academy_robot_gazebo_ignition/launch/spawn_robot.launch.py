@@ -31,6 +31,7 @@ from launch_ros.substitutions import FindPackageShare
 from launch_ros.descriptions import ParameterValue
 from academy_robot_common.launch import ExtendedArgument, AddArgumentParser
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from moveit_configs_utils import MoveItConfigsBuilder
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -61,7 +62,7 @@ def generate_launch_description():
     arg = ExtendedArgument(
         name="namespace",
         description="Namespace",
-        default_value="robot",
+        default_value="",
         use_env=True,
         environment="NAMESPACE",
     )
@@ -191,6 +192,7 @@ def generate_launch_description():
         executable="parameter_bridge",
         parameters=[
             {"config_file": bridge_params},
+            {"use_sim_time": True},
         ],
         namespace=params["namespace"],
     )
@@ -280,7 +282,36 @@ def generate_launch_description():
         executable="rviz2",
         namespace=params["namespace"],
         arguments=["-d", rviz2_config],
+        parameters=[{"use_sim_time": True}],
     )
     ld.add_action(rviz2)
+
+    ########## MOVEIT CONFIGURATION ##########
+    moveit_robot_description_package = "academy_robot_moveit_config"
+    moveit_robot_description_path = get_package_share_directory(moveit_robot_description_package)
+
+    moveit_config = (
+        MoveItConfigsBuilder("academy_robot")
+        .robot_description(file_path=os.path.join(moveit_robot_description_path, "config", "academy_robot_arm.urdf.xacro"))
+        .robot_description_semantic(file_path=os.path.join(moveit_robot_description_path, "config", "academy_robot_arm.srdf"))
+        .robot_description_kinematics(file_path=os.path.join(moveit_robot_description_path, "config", "kinematics.yaml"))
+        .trajectory_execution(file_path=os.path.join(moveit_robot_description_path, "config", "moveit_controllers.yaml"))
+        .joint_limits(file_path=os.path.join(moveit_robot_description_path, "config", "joint_limits.yaml"))
+        .planning_pipelines(pipelines=["ompl", "pilz_industrial_motion_planner"])
+        .planning_scene_monitor(publish_robot_description=True, publish_robot_description_semantic=True)
+        .to_moveit_configs()
+    )
+
+    move_group_node = Node(
+        package="moveit_ros_move_group",
+        executable="move_group",
+        output="screen",
+        parameters=[
+            moveit_config.to_dict(),
+            {"use_sim_time": True},
+        ],
+        namespace=params["namespace"],
+    )
+    ld.add_action(move_group_node)
 
     return ld

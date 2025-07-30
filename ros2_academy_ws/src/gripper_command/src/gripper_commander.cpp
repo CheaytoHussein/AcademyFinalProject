@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
 
     // Create publisher with reliable QoS
     auto pub = node->create_publisher<trajectory_msgs::msg::JointTrajectory>(
-        "/robot/gripper_trajectory_controller/joint_trajectory",
+        "/gripper_trajectory_controller/joint_trajectory",
         rclcpp::QoS(rclcpp::KeepLast(10)).reliable());
 
     std::string mode = "open";

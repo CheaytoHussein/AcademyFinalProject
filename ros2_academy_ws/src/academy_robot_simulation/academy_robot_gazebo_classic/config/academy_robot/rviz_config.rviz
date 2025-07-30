@@ -58,7 +58,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /robot/robot_description
+        Value: /robot_description
       Enabled: true
       Links:
         All Links Enabled: true
@@ -251,7 +251,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /robot/rear_laser/scan
+        Value: /rear_laser/scan
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -267,7 +267,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /robot/front_rgbd_camera/color/image_raw
+        Value: /front_rgbd_camera/color/image_raw
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -299,7 +299,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /robot/front_laser/scan
+        Value: /front_laser/scan
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
