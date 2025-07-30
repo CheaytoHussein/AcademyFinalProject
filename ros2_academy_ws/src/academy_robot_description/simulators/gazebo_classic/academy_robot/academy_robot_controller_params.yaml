@@ -62,7 +62,7 @@
       #Topics
       cmd_vel_topic: ~/cmd_vel
       odom_topic: ~/odom
-      imu_topic: /robot/imu/data
+      imu_topic: /imu/data
       emergency_topic: ~/emergency
       joint_control_topic: ~/joint_control_command
 

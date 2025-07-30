@@ -83,7 +83,7 @@
           </noise>
         </ray>
         <plugin name="${prefix}_controller" filename="${plugin_lib}">
-          <topicName>/robot/front_3d_laser/point_cloud</topicName>
+          <topicName>/front_3d_laser/point_cloud</topicName>
           <frameName>/${prefix}_link</frameName>
           <ignoreTfPrefix>1</ignoreTfPrefix>
         </plugin>
