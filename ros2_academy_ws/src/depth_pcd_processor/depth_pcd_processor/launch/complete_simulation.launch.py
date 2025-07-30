@@ -98,6 +98,18 @@ def generate_launch_description():
         description='Standard deviation ratio for outlier removal'
     )
     
+    debug_mode_arg = DeclareLaunchArgument(
+        'debug_mode',
+        default_value='false',
+        description='Enable debug logging for point cloud processing'
+    )
+    
+    transform_mode_arg = DeclareLaunchArgument(
+        'transform_mode',
+        default_value='1',
+        description='Transform mode: 1=standard, 2=no_transform, 3=alternative'
+    )
+    
     # Include world launch
     world_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
@@ -145,6 +157,8 @@ def generate_launch_description():
             'remove_outliers': LaunchConfiguration('remove_outliers'),
             'outlier_nb_points': LaunchConfiguration('outlier_nb_points'),
             'outlier_radius': LaunchConfiguration('outlier_radius'),
+            'debug_mode': LaunchConfiguration('debug_mode'),
+            'transform_mode': LaunchConfiguration('transform_mode'),
         }]
     )
     
@@ -164,6 +178,8 @@ def generate_launch_description():
         remove_outliers_arg,
         outlier_nb_points_arg,
         outlier_radius_arg,
+        debug_mode_arg,
+        transform_mode_arg,
         
         # Launch components
         world_launch,

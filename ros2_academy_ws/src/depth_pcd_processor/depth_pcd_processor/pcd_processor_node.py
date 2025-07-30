@@ -2,23 +2,18 @@
 
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import Image, CameraInfo
-from sensor_msgs.msg import PointCloud2
+from sensor_msgs.msg import Image, CameraInfo, PointCloud2
 from cv_bridge import CvBridge
-import cv2
 import numpy as np
 import open3d as o3d
 from std_msgs.msg import Header
 import sensor_msgs_py.point_cloud2 as pc2
 import tf2_ros
-import tf2_geometry_msgs
-from geometry_msgs.msg import TransformStamped
 
 
 class PCDProcessorNode(Node):
     """
     ROS2 node for processing depth images and converting them to point clouds using Open3D.
-    Subscribes to depth images and camera info, publishes processed point clouds.
     """
     
     def __init__(self):
@@ -33,7 +28,6 @@ class PCDProcessorNode(Node):
         
         # Camera parameters (will be updated from camera_info)
         self.camera_matrix = None
-        self.distortion_coeffs = None
         
         # Parameters
         self.declare_parameter('depth_topic', '/robot/front_rgbd_camera/depth/image_raw')
@@ -41,11 +35,8 @@ class PCDProcessorNode(Node):
         self.declare_parameter('point_cloud_topic', '/processed_point_cloud')
         self.declare_parameter('min_depth', 0.1)
         self.declare_parameter('max_depth', 10.0)
-        self.declare_parameter('downsample_voxel_size', 0.01)
-        self.declare_parameter('remove_outliers', True)
-        self.declare_parameter('outlier_nb_points', 20)
-        self.declare_parameter('outlier_radius', 0.1)
         self.declare_parameter('target_frame', 'robot_base_footprint')
+        self.declare_parameter('debug_mode', False)
         
         # Get parameters
         self.depth_topic = self.get_parameter('depth_topic').value
@@ -53,11 +44,8 @@ class PCDProcessorNode(Node):
         self.point_cloud_topic = self.get_parameter('point_cloud_topic').value
         self.min_depth = self.get_parameter('min_depth').value
         self.max_depth = self.get_parameter('max_depth').value
-        self.downsample_voxel_size = self.get_parameter('downsample_voxel_size').value
-        self.remove_outliers = self.get_parameter('remove_outliers').value
-        self.outlier_nb_points = self.get_parameter('outlier_nb_points').value
-        self.outlier_radius = self.get_parameter('outlier_radius').value
         self.target_frame = self.get_parameter('target_frame').value
+        self.debug_mode = self.get_parameter('debug_mode').value
         
         # Subscribers
         self.depth_sub = self.create_subscription(
@@ -83,14 +71,12 @@ class PCDProcessorNode(Node):
         
         self.get_logger().info(f'PCD Processor Node initialized')
         self.get_logger().info(f'Subscribing to depth topic: {self.depth_topic}')
-        self.get_logger().info(f'Subscribing to camera info topic: {self.camera_info_topic}')
         self.get_logger().info(f'Publishing to point cloud topic: {self.point_cloud_topic}')
     
     def camera_info_callback(self, msg):
         """Callback for camera info messages to get camera parameters."""
         if self.camera_matrix is None:
             self.camera_matrix = np.array(msg.k).reshape(3, 3)
-            self.distortion_coeffs = np.array(msg.d)
             self.get_logger().info('Camera parameters received')
     
     def depth_callback(self, msg):
@@ -109,7 +95,8 @@ class PCDProcessorNode(Node):
             if point_cloud is not None:
                 # Publish the processed point cloud
                 self.point_cloud_pub.publish(point_cloud)
-                self.get_logger().debug('Published processed point cloud')
+                if self.debug_mode:
+                    self.get_logger().info('Published processed point cloud')
                 
         except Exception as e:
             self.get_logger().error(f'Error processing depth image: {str(e)}')
@@ -117,17 +104,23 @@ class PCDProcessorNode(Node):
     def process_depth_image(self, depth_image, header):
         """
         Process depth image and convert to point cloud using Open3D.
-        
-        Args:
-            depth_image: OpenCV depth image
-            header: ROS message header
-            
-        Returns:
-            PointCloud2 message or None if processing fails
         """
         try:
+            # Filter out invalid depth values
+            depth_image_clean = depth_image.copy()
+            depth_image_clean[np.isinf(depth_image_clean)] = np.nan
+            depth_image_clean[depth_image_clean < self.min_depth] = np.nan
+            depth_image_clean[depth_image_clean > self.max_depth] = np.nan
+            
+            # Check if we have any valid depth values
+            valid_mask = ~np.isnan(depth_image_clean)
+            if not np.any(valid_mask):
+                if self.debug_mode:
+                    self.get_logger().warn('No valid depth values found after filtering')
+                return None
+            
             # Create Open3D depth image
-            o3d_depth = o3d.geometry.Image(depth_image.astype(np.float32))
+            o3d_depth = o3d.geometry.Image(depth_image_clean.astype(np.float32))
             
             # Create intrinsic matrix for Open3D
             intrinsic = o3d.camera.PinholeCameraIntrinsic()
@@ -142,105 +135,66 @@ class PCDProcessorNode(Node):
             
             # Convert depth image to point cloud
             pcd = o3d.geometry.PointCloud.create_from_depth_image(o3d_depth, intrinsic)
-            
-            # Apply coordinate transformation to match ROS2 camera convention
-            # ROS2 cameras use: X forward, Y left, Z up
-            # Open3D uses: X right, Y down, Z forward
-            # We need to transform: (x, y, z) -> (z, -x, -y)
             points = np.asarray(pcd.points)
-            if len(points) > 0:
-                # Transform coordinates to match ROS2 convention
-                transformed_points = np.column_stack([
-                    points[:, 2],   # Z becomes X (forward)
-                    -points[:, 0],  # -X becomes Y (left)
-                    -points[:, 1]   # -Y becomes Z (up)
-                ])
-                
-                # Apply depth filtering in the transformed coordinate system
-                valid_mask = (transformed_points[:, 0] >= self.min_depth) & (transformed_points[:, 0] <= self.max_depth)
-                filtered_points = transformed_points[valid_mask]
-                
-                if len(filtered_points) == 0:
-                    self.get_logger().warn('No valid points after depth filtering')
-                    return None
-                
-                # Create new point cloud with filtered points
-                filtered_pcd = o3d.geometry.PointCloud()
-                filtered_pcd.points = o3d.utility.Vector3dVector(filtered_points)
-                
-                # Downsample point cloud
-                if self.downsample_voxel_size > 0:
-                    filtered_pcd = filtered_pcd.voxel_down_sample(self.downsample_voxel_size)
-                
-                # Remove outliers
-                if self.remove_outliers:
-                    filtered_pcd, _ = filtered_pcd.remove_statistical_outlier(
-                        nb_neighbors=self.outlier_nb_points,
-                        std_ratio=self.outlier_radius
+            
+            if len(points) == 0:
+                if self.debug_mode:
+                    self.get_logger().warn('No points generated from depth image')
+                return None
+            
+            # Determine optical frame ID
+            if 'depth_frame' in header.frame_id:
+                optical_frame_id = header.frame_id.replace('depth_frame', 'depth_optical_frame')
+            elif 'depth_optical_frame' in header.frame_id:
+                optical_frame_id = header.frame_id
+            else:
+                optical_frame_id = header.frame_id
+            
+            # Transform to target frame if needed
+            if optical_frame_id != self.target_frame:
+                try:
+                    transform = self.tf_buffer.lookup_transform(
+                        self.target_frame,
+                        optical_frame_id,
+                        header.stamp,
+                        timeout=rclpy.duration.Duration(seconds=0.1)
                     )
-                
-                # Convert to ROS PointCloud2
-                points = np.asarray(filtered_pcd.points)
-                
-                # Transform point cloud to target frame if different from source frame
-                if header.frame_id != self.target_frame:
-                    try:
-                        # Get transform from source frame to target frame
-                        transform = self.tf_buffer.lookup_transform(
-                            self.target_frame,
-                            header.frame_id,
-                            header.stamp,
-                            timeout=rclpy.duration.Duration(seconds=0.1)
-                        )
-                        
-                        # Transform points to target frame
-                        transformed_points = self.transform_points(points, transform)
-                        
-                        # Create header with target frame
-                        cloud_header = Header()
-                        cloud_header.stamp = header.stamp
-                        cloud_header.frame_id = self.target_frame
-                        
-                        # Create point cloud message with transformed points
-                        cloud_msg = pc2.create_cloud_xyz32(cloud_header, transformed_points)
-                        
-                        return cloud_msg
-                        
-                    except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
-                        self.get_logger().warn(f'TF transform failed: {str(e)}')
-                        # Fall back to original frame
-                        cloud_header = Header()
-                        cloud_header.stamp = header.stamp
-                        cloud_header.frame_id = header.frame_id
-                        cloud_msg = pc2.create_cloud_xyz32(cloud_header, points)
-                        return cloud_msg
-                else:
-                    # No transformation needed
+                    
+                    # Apply transformation
+                    transformed_points = self.transform_points(points, transform)
+                    
+                    # Create point cloud message
                     cloud_header = Header()
                     cloud_header.stamp = header.stamp
-                    cloud_header.frame_id = header.frame_id
+                    cloud_header.frame_id = self.target_frame
+                    cloud_msg = pc2.create_cloud_xyz32(cloud_header, transformed_points)
+                    
+                    return cloud_msg
+                    
+                except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+                    if self.debug_mode:
+                        self.get_logger().warn(f'TF transform failed: {str(e)}')
+                    # Fall back to optical frame
+                    cloud_header = Header()
+                    cloud_header.stamp = header.stamp
+                    cloud_header.frame_id = optical_frame_id
                     cloud_msg = pc2.create_cloud_xyz32(cloud_header, points)
                     return cloud_msg
             else:
-                self.get_logger().warn('No points generated from depth image')
-                return None
+                # No transformation needed
+                cloud_header = Header()
+                cloud_header.stamp = header.stamp
+                cloud_header.frame_id = optical_frame_id
+                cloud_msg = pc2.create_cloud_xyz32(cloud_header, points)
+                return cloud_msg
                 
         except Exception as e:
             self.get_logger().error(f'Error in depth processing: {str(e)}')
             return None
     
     def transform_points(self, points, transform):
-        """
-        Transform points using TF2 transform.
-        
-        Args:
-            points: numpy array of points (N, 3)
-            transform: TransformStamped message
-            
-        Returns:
-            Transformed points as numpy array (N, 3)
-        """
-        # Extract rotation and translation from transform
+        """Transform points using TF2 transform."""
+        # Extract rotation and translation
         rotation = transform.transform.rotation
         translation = transform.transform.translation
         
@@ -251,7 +205,6 @@ class PCDProcessorNode(Node):
         # Apply transformation to each point
         transformed_points = []
         for point in points:
-            # Apply rotation and translation
             rotated_point = rotation_matrix @ point
             transformed_point = rotated_point + np.array([translation.x, translation.y, translation.z])
             transformed_points.append(transformed_point)
@@ -259,15 +212,7 @@ class PCDProcessorNode(Node):
         return np.array(transformed_points)
     
     def quaternion_to_rotation_matrix(self, q):
-        """
-        Convert quaternion to rotation matrix.
-        
-        Args:
-            q: numpy array [x, y, z, w]
-            
-        Returns:
-            3x3 rotation matrix
-        """
+        """Convert quaternion to rotation matrix."""
         x, y, z, w = q
         
         # Normalize quaternion
@@ -286,7 +231,6 @@ class PCDProcessorNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    
     node = PCDProcessorNode()
     
     try:

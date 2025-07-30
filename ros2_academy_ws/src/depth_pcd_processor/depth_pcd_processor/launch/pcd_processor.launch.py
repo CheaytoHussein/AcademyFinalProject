@@ -64,10 +64,22 @@ def generate_launch_description():
         description='Standard deviation ratio for outlier removal'
     )
     
+    debug_mode_arg = DeclareLaunchArgument(
+        'debug_mode',
+        default_value='false',
+        description='Enable debug logging for point cloud processing'
+    )
+    
     target_frame_arg = DeclareLaunchArgument(
         'target_frame',
         default_value='robot_base_footprint',
         description='Target frame for point cloud transformation'
+    )
+    
+    transform_mode_arg = DeclareLaunchArgument(
+        'transform_mode',
+        default_value='1',
+        description='Transform mode: 1=standard, 2=no_transform, 3=alternative'
     )
     
     # PCD Processor Node
@@ -87,6 +99,8 @@ def generate_launch_description():
             'outlier_nb_points': LaunchConfiguration('outlier_nb_points'),
             'outlier_radius': LaunchConfiguration('outlier_radius'),
             'target_frame': LaunchConfiguration('target_frame'),
+            'debug_mode': LaunchConfiguration('debug_mode'),
+            'transform_mode': LaunchConfiguration('transform_mode'),
         }]
     )
     
@@ -100,6 +114,8 @@ def generate_launch_description():
         remove_outliers_arg,
         outlier_nb_points_arg,
         outlier_radius_arg,
+        debug_mode_arg,
         target_frame_arg,
+        transform_mode_arg,
         pcd_processor_node,
     ]) 
