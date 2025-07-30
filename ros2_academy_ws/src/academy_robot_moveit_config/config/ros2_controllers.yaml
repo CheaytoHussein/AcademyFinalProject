@@ -3,18 +3,18 @@ controller_manager:
   ros__parameters:
     update_rate: 100  # Hz
 
-    ur_arm_controller:
+    joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
 
-    hand_controller:
+    gripper_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
-ur_arm_controller:
+joint_trajectory_controller:
   ros__parameters:
     joints:
       - robot_arm_shoulder_pan_joint
@@ -28,7 +28,7 @@ ur_arm_controller:
     state_interfaces:
       - position
       - velocity
-hand_controller:
+gripper_trajectory_controller:
   ros__parameters:
     joints:
       - robotiq_85_left_inner_knuckle_joint

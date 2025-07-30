@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot name="academy_robot_arm" xmlns:xacro="http://wiki.ros.org/xacro">
+<robot name="academy_robot" xmlns:xacro="http://wiki.ros.org/xacro">
     <!-- UR Macros -->
     <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro" />
     <xacro:arg name="prefix" default="robot_" />

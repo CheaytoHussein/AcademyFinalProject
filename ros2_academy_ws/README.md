@@ -140,7 +140,7 @@ ros2 launch academy_robot_gazebo_ignition spawn_robot.launch.py robot:=academy_r
 
 #### Teleoperation (Keyboard)
 ```sh
-ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r cmd_vel:=/robot/robotnik_base_controller/cmd_vel -p stamped:=true
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r cmd_vel:=/robotnik_base_controller/cmd_vel -p stamped:=true
 ```
 
 #### Joint Trajectory Controller (RQT)
