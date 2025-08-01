@@ -24,6 +24,8 @@ class PCDProcessorNode(Node):
         
         # Camera parameters (will be updated from camera_info)
         self.camera_matrix = None
+        self.width = None
+        self.height = None
         
         # Parameters
         self.declare_parameter('depth_topic', '/robot/front_rgbd_camera/depth/image_raw')
@@ -72,6 +74,8 @@ class PCDProcessorNode(Node):
         """Callback for camera info messages to get camera parameters."""
         if self.camera_matrix is None:
             self.camera_matrix = np.array(msg.k).reshape(3, 3)
+            self.width = msg.width
+            self.height = msg.height
             self.get_logger().info('Camera parameters received')
     
     def depth_callback(self, msg):
@@ -113,22 +117,17 @@ class PCDProcessorNode(Node):
                 if self.debug_mode:
                     self.get_logger().warn('No valid depth values found after filtering')
                 return None
-            
-            # Create Open3D depth image
             o3d_depth = o3d.geometry.Image(depth_image_clean.astype(np.float32))
-            
-            # Create intrinsic matrix for Open3D
+
             intrinsic = o3d.camera.PinholeCameraIntrinsic()
             intrinsic.set_intrinsics(
-                depth_image.shape[1],  # width
-                depth_image.shape[0],  # height
-                self.camera_matrix[0, 0],  # fx
-                self.camera_matrix[1, 1],  # fy
-                self.camera_matrix[0, 2],  # cx
-                self.camera_matrix[1, 2]   # cy
+                self.width,
+                self.height,
+                self.camera_matrix[0, 0],
+                self.camera_matrix[1, 1],
+                self.width / 2.0,
+                self.height / 2.0
             )
-            
-            # Convert depth image to point cloud
             pcd = o3d.geometry.PointCloud.create_from_depth_image(o3d_depth, intrinsic)
             points = np.asarray(pcd.points)
             
