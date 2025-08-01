@@ -5,6 +5,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image, CameraInfo, PointCloud2
 from cv_bridge import CvBridge
 import numpy as np
+import math
 import open3d as o3d
 from std_msgs.msg import Header
 import sensor_msgs_py.point_cloud2 as pc2
@@ -23,9 +24,10 @@ class PCDProcessorNode(Node):
         self.bridge = CvBridge()
         
         # Camera parameters (will be updated from camera_info)
-        self.camera_matrix = None
         self.width = None
         self.height = None
+        self.fx = None
+        self.fy = None
         
         # Parameters
         self.declare_parameter('depth_topic', '/robot/front_rgbd_camera/depth/image_raw')
@@ -34,6 +36,8 @@ class PCDProcessorNode(Node):
         self.declare_parameter('min_depth', 0.1)
         self.declare_parameter('max_depth', 10.0)
         self.declare_parameter('debug_mode', False)
+        self.declare_parameter('horizontal_fov_deg', 85.2)
+        self.declare_parameter('vertical_fov_deg', 48.0)
         
         # Get parameters
         self.depth_topic = self.get_parameter('depth_topic').value
@@ -41,8 +45,9 @@ class PCDProcessorNode(Node):
         self.point_cloud_topic = self.get_parameter('point_cloud_topic').value
         self.min_depth = self.get_parameter('min_depth').value
         self.max_depth = self.get_parameter('max_depth').value
-
         self.debug_mode = self.get_parameter('debug_mode').value
+        self.horizontal_fov_deg = self.get_parameter('horizontal_fov_deg').value
+        self.vertical_fov_deg = self.get_parameter('vertical_fov_deg').value
         
         # Subscribers
         self.depth_sub = self.create_subscription(
@@ -72,15 +77,26 @@ class PCDProcessorNode(Node):
     
     def camera_info_callback(self, msg):
         """Callback for camera info messages to get camera parameters."""
-        if self.camera_matrix is None:
-            self.camera_matrix = np.array(msg.k).reshape(3, 3)
+        if self.fx is None:
+            self.get_logger().info('Camera info received. Calculating intrinsics from parameters.')
             self.width = msg.width
             self.height = msg.height
-            self.get_logger().info('Camera parameters received')
+
+            # Convert FOV from degrees to radians
+            H_FOV_rad = math.radians(self.horizontal_fov_deg)
+            V_FOV_rad = math.radians(self.vertical_fov_deg)
+
+            # Calculate focal lengths from FOV and image size
+            self.fx = self.width / (2 * math.tan(H_FOV_rad / 2))
+            self.fy = self.height / (2 * math.tan(V_FOV_rad / 2))
+            self.cx = self.width / 2
+            self.cy = self.height / 2
+            
+            self.get_logger().info(f'Using calculated intrinsics: fx={self.fx:.2f}, fy={self.fy:.2f}, cx={self.cx:.2f}, cy={self.cy:.2f}')
     
     def depth_callback(self, msg):
         """Callback for depth image messages."""
-        if self.camera_matrix is None:
+        if self.fx is None:
             self.get_logger().warn('Camera parameters not yet received, skipping depth processing')
             return
         
@@ -94,8 +110,6 @@ class PCDProcessorNode(Node):
             if point_cloud is not None:
                 # Publish the processed point cloud
                 self.point_cloud_pub.publish(point_cloud)
-                if self.debug_mode:
-                    self.get_logger().info('Published processed point cloud')
                 
         except Exception as e:
             self.get_logger().error(f'Error processing depth image: {str(e)}')
@@ -117,17 +131,22 @@ class PCDProcessorNode(Node):
                 if self.debug_mode:
                     self.get_logger().warn('No valid depth values found after filtering')
                 return None
+            
+            # Create Open3D depth image
             o3d_depth = o3d.geometry.Image(depth_image_clean.astype(np.float32))
-
+            
+            # Create the intrinsic matrix for Open3D
             intrinsic = o3d.camera.PinholeCameraIntrinsic()
             intrinsic.set_intrinsics(
-                self.width,
-                self.height,
-                self.camera_matrix[0, 0],
-                self.camera_matrix[1, 1],
-                self.width / 2.0,
-                self.height / 2.0
+                self.width,                   # width
+                self.height,                  # height
+                self.fx,                      # fx
+                self.fy,                      # fy
+                self.cx,                      # cx
+                self.cy                       # cy
             )
+            
+            # Convert depth image to point cloud
             pcd = o3d.geometry.PointCloud.create_from_depth_image(o3d_depth, intrinsic)
             points = np.asarray(pcd.points)
             
@@ -163,4 +182,4 @@ def main(args=None):
 
 
 if __name__ == '__main__':
-    main() 
+    main()
