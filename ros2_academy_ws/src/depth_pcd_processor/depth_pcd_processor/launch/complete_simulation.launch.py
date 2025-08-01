@@ -40,13 +40,13 @@ def generate_launch_description():
     # PCD Processor parameters
     depth_topic_arg = DeclareLaunchArgument(
         'depth_topic',
-        default_value='/robot/front_rgbd_camera/depth/image_raw',
+        default_value='/front_rgbd_camera/depth/image_raw',
         description='Topic for depth images'
     )
     
     camera_info_topic_arg = DeclareLaunchArgument(
         'camera_info_topic',
-        default_value='/robot/front_rgbd_camera/depth/camera_info',
+        default_value='/front_rgbd_camera/depth/camera_info',
         description='Topic for camera info'
     )
     

@@ -30,8 +30,8 @@ class PCDProcessorNode(Node):
         self.fy = None
         
         # Parameters
-        self.declare_parameter('depth_topic', '/robot/front_rgbd_camera/depth/image_raw')
-        self.declare_parameter('camera_info_topic', '/robot/front_rgbd_camera/depth/camera_info')
+        self.declare_parameter('depth_topic', '/front_rgbd_camera/depth/image_raw')
+        self.declare_parameter('camera_info_topic', '/front_rgbd_camera/depth/camera_info')
         self.declare_parameter('point_cloud_topic', '/processed_point_cloud')
         self.declare_parameter('min_depth', 0.1)
         self.declare_parameter('max_depth', 10.0)
