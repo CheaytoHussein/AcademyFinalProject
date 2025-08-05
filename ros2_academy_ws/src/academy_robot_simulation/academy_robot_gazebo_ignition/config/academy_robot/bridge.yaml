@@ -38,13 +38,14 @@
   gz_type_name: "ignition.msgs.IMU"
   direction: GZ_TO_ROS
 
-# Add these entries to bridge.yaml
+# gz topic published by Sensors plugin (Camera)
 - ros_topic_name: "/front_rgbd_camera/depth/image_raw"
   gz_topic_name: "/front_camera_depth/depth/image_raw"
   ros_type_name: "sensor_msgs/msg/Image"
   gz_type_name: "gz.msgs.Image"
   direction: GZ_TO_ROS
 
+# gz topic published by Sensors plugin (Camera)
 - ros_topic_name: "/front_rgbd_camera/depth/camera_info"
   gz_topic_name: "/front_camera_depth/depth/camera_info"
   ros_type_name: "sensor_msgs/msg/CameraInfo"
