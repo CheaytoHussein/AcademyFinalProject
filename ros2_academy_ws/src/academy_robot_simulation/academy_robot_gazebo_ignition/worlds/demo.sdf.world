@@ -169,7 +169,7 @@
       </link>
     </model>
 
-    <model name='Screw'>
+    <model name='socket_cap_screw'>
       <static>true</static>
       <link name='link'>
         <pose frame=''>2.0 0.0 0.1 0 0 0</pose>
@@ -177,6 +177,7 @@
           <geometry>
             <mesh>
               <uri>model://academy_robot_description/meshes/socket_cap_screw.stl</uri>
+              <scale>0.01 0.01 0.01</scale>
             </mesh>
           </geometry>
         </collision>
@@ -184,6 +185,7 @@
           <geometry>
             <mesh>
               <uri>model://academy_robot_description/meshes/socket_cap_screw.stl</uri>
+              <scale>0.01 0.01 0.01</scale>
             </mesh>
           </geometry>
         </visual>
