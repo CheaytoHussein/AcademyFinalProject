@@ -94,7 +94,21 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /front_rgbd_camera/color/image_raw
-      Value: false
+      Value: true
+    - Class: rviz_default_plugins/Image
+      Enabled: true
+      Max Value: 10
+      Median window: 5
+      Min Value: 0
+      Name: FrontCameraDepthImage
+      Normalize Range: false
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /front_rgbd_camera/depth/image_raw
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -937,6 +951,8 @@ Window Geometry:
   Displays:
     collapsed: false
   FrontCameraImage:
+    collapsed: false
+  FrontCameraDepthImage:
     collapsed: false
   Height: 1043
   Hide Left Dock: false
