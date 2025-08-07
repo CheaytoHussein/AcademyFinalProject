@@ -169,6 +169,29 @@
       </link>
     </model>
 
+    <model name='socket_cap_screw'>
+      <static>true</static>
+      <link name='link'>
+        <pose frame=''>2.0 0.0 0.5 0 0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://academy_robot_description/meshes/socket_cap_screw.stl</uri>
+              <scale>0.02 0.02 0.02</scale>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://academy_robot_description/meshes/socket_cap_screw.stl</uri>
+              <scale>0.02 0.02 0.02</scale>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
     <model name='demo'>
       <pose frame=''>0.446728 2 0 0 0 1.57</pose>
       <link name='Wall_10'>
