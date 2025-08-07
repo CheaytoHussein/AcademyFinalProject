@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>depth_pcd_processor</name>
+  <name>depth_to_pointcloud</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>ROS2 package for converting depth images to point clouds</description>
   <maintainer email="malek.wahidi@inmind.ai">malek</maintainer>
   <license>TODO: License declaration</license>
 

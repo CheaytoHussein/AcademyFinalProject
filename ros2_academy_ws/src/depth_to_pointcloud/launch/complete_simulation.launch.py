@@ -49,40 +49,22 @@ def generate_launch_description():
         description='Topic for camera info'
     )
     
-    object_point_cloud_topic_arg = DeclareLaunchArgument(
-        'object_point_cloud_topic',
-        default_value='/object_point_cloud',
-        description='Topic for publishing object point clouds'
+    point_cloud_topic_arg = DeclareLaunchArgument(
+        'point_cloud_topic',
+        default_value='/point_cloud',
+        description='Topic for publishing point clouds'
     )
     
-    min_depth_arg = DeclareLaunchArgument(
-        'min_depth',
-        default_value='0.1',
-        description='Minimum depth value in meters'
+    horizontal_fov_deg_arg = DeclareLaunchArgument(
+        'horizontal_fov_deg',
+        default_value='85.2',
+        description='Horizontal field of view in degrees'
     )
     
-    max_depth_arg = DeclareLaunchArgument(
-        'max_depth',
-        default_value='10.0',
-        description='Maximum depth value in meters'
-    )
-    
-    debug_mode_arg = DeclareLaunchArgument(
-        'debug_mode',
-        default_value='false',
-        description='Enable debug logging for point cloud processing'
-    )
-    
-    mesh_package_name_arg = DeclareLaunchArgument(
-        'mesh_package_name',
-        default_value='academy_robot_description',
-        description='Name of the package containing the mesh file'
-    )
-    
-    mesh_file_path_arg = DeclareLaunchArgument(
-        'mesh_file_path',
-        default_value='meshes/socket_cap_screw.stl',
-        description='Path to the mesh file relative to the package share directory'
+    vertical_fov_deg_arg = DeclareLaunchArgument(
+        'vertical_fov_deg',
+        default_value='48.0',
+        description='Vertical field of view in degrees'
     )
     
     # Include world launch
@@ -115,21 +97,18 @@ def generate_launch_description():
         }.items()
     )
     
-    # PCD Processor Node
-    pcd_processor_node = Node(
-        package='depth_pcd_processor',
-        executable='pcd_processor_node',
-        name='pcd_processor_node',
+    # Depth to PointCloud Node
+    depth_to_pointcloud_node = Node(
+        package='depth_to_pointcloud',
+        executable='depth_to_pointcloud_node',
+        name='depth_to_pointcloud_node',
         output='screen',
         parameters=[{
             'depth_topic': LaunchConfiguration('depth_topic'),
             'camera_info_topic': LaunchConfiguration('camera_info_topic'),
-            'object_point_cloud_topic': LaunchConfiguration('object_point_cloud_topic'),
-            'min_depth': LaunchConfiguration('min_depth'),
-            'max_depth': LaunchConfiguration('max_depth'),
-            'debug_mode': LaunchConfiguration('debug_mode'),
-            'mesh_package_name': LaunchConfiguration('mesh_package_name'),
-            'mesh_file_path': LaunchConfiguration('mesh_file_path'),
+            'point_cloud_topic': LaunchConfiguration('point_cloud_topic'),
+            'horizontal_fov_deg': LaunchConfiguration('horizontal_fov_deg'),
+            'vertical_fov_deg': LaunchConfiguration('vertical_fov_deg'),
         }]
     )
     
@@ -141,15 +120,12 @@ def generate_launch_description():
         has_arm_arg,
         depth_topic_arg,
         camera_info_topic_arg,
-        object_point_cloud_topic_arg,
-        min_depth_arg,
-        max_depth_arg,
-        debug_mode_arg,
-        mesh_package_name_arg,
-        mesh_file_path_arg,
+        point_cloud_topic_arg,
+        horizontal_fov_deg_arg,
+        vertical_fov_deg_arg,
         
         # Launch components
         world_launch,
         robot_launch,
-        pcd_processor_node,
+        depth_to_pointcloud_node,
     ])
