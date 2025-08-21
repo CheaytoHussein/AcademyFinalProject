@@ -184,7 +184,7 @@ colcon --log-base $HOME/colcon_user/log build \
   --build-base  $HOME/colcon_user/build \
   --install-base $HOME/colcon_user/install
 
-(New shells auto-source it via ~/.bashrc; otherwise do:)
+New shells auto-source it via ~/.bashrc; otherwise do:
 source $HOME/colcon_user/install/setup.bash
 ```
 

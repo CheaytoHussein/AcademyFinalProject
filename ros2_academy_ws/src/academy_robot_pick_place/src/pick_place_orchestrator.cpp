@@ -36,8 +36,8 @@ public:
     pose_client_ = this->create_client<GetScrewPose>("get_screw_pose");
 
     // MoveIt setup
-    arm_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(shared_from_this(), "arm"); // <-- adjust group name
-    gripper_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(shared_from_this(), "gripper"); // <-- adjust
+    arm_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(shared_from_this(), "ur_arm");
+    gripper_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(shared_from_this(), "hand");
 
     RCLCPP_INFO(get_logger(), "Pick&Place orchestrator ready. Call 'ros2 run ... pick_place_orchestrator'");
   }
