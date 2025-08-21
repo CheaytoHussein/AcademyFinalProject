@@ -168,7 +168,7 @@ Replace `ur3` with any supported type: `ur3`, `ur3e`, `ur5`, `ur5e`, `ur7e`, `ur
 - **Universal_Robots_ROS2_Description**: Universal Robots models and launch files.
 
 
-## added stuff (i will make this part prettier)
+## Additional Commands  
 Run these after ./start_container.sh to setup everything properly
 ```sh
 One-time setup:
@@ -188,11 +188,21 @@ New shells auto-source it via ~/.bashrc; otherwise do:
 source $HOME/colcon_user/install/setup.bash
 ```
 
+Turn on depth to pointcloud:
+```sh
+ros2 run depth_to_pointcloud depth_to_pointcloud_node \
+    --ros-args -p depth_topic:=/front_rgbd_camera/depth/image_raw 
+    -p camera_info_topic:=/front_rgbd_camera/depth/camera_info 
+    -p output_cloud:=/camera/depth/points 
+-p stride:=2
+```
+
 Turn on get latest cloud service:
 ```sh
 ros2 run academy_robot_pointcloud_server depth_to_pointcloud_server \
   --ros-args -p input_topic:=/camera/depth/points
 ```
+
 Call latest cloud service:
 ```sh
 ros2 service call /get_latest_cloud academy_robot_pointcloud_interfaces/srv/GetPointCloud "{}"
