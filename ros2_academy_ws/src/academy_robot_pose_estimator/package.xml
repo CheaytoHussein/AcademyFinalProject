@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>academy_robot_pose_estimator</name>
+  <version>0.0.1</version>
+  <description>Pose estimation node using PCL.</description>
+  <maintainer email="cheaytox27@gmail.com">You</maintainer>
+  <license>BSD-3-Clause</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>academy_robot_pointcloud_interfaces</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>pcl_conversions</depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,12 @@
+# Goal
+float32 stop_distance           # meters to keep from the detected screw/obstacle
+float32 max_forward_speed       # m/s cap for linear.x
+float32 timeout_sec             # abort if no success within this time (<=0 means no timeout)
+---
+# Result
+bool success
+float32 final_distance
+string message
+---
+# Feedback
+float32 remaining_distance      # current_min_range - stop_distance

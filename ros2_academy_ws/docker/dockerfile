@@ -1,8 +1,10 @@
 ARG ros_distro="humble"
+ARG build_platform="amd64"
 
-FROM --platform=amd64 osrf/ros:${ros_distro}-desktop-full
+FROM --platform=${build_platform} osrf/ros:${ros_distro}-desktop-full
 ARG UID=1000
 ARG GID=1000
+ARG ros_distro="humble"
 ENV DEBIAN_FRONTEND=noninteractive
 
 ADD ./docker/install_tools.sh /scripts/install_tools.sh

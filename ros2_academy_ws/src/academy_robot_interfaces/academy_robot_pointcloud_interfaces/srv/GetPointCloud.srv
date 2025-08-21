@@ -1,0 +1,4 @@
+# Request
+---
+bool success
+sensor_msgs/PointCloud2 cloud

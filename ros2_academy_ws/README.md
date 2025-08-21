@@ -166,3 +166,36 @@ Replace `ur3` with any supported type: `ur3`, `ur3e`, `ur5`, `ur5e`, `ur7e`, `ur
   - **academy_robot_gazebo_classic**: Gazebo Classic simulation launch and worlds.
   - **academy_robot_gazebo_ignition**: Gazebo Ignition (Sim) simulation launch and worlds.
 - **Universal_Robots_ROS2_Description**: Universal Robots models and launch files.
+
+
+## added stuff (i will make this part prettier)
+Run these after ./start_container.sh to setup everything properly
+```sh
+One-time setup:
+mkdir -p $HOME/colcon_user/{build,install,log}
+echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc
+echo 'source $HOME/colcon_user/install/setup.bash' >> ~/.bashrc
+
+Build (every time you change code):
+cd ~/ros2_ws
+source /opt/ros/humble/setup.bash
+colcon --log-base $HOME/colcon_user/log build \
+  --merge-install \
+  --build-base  $HOME/colcon_user/build \
+  --install-base $HOME/colcon_user/install
+
+(New shells auto-source it via ~/.bashrc; otherwise do:)
+source $HOME/colcon_user/install/setup.bash
+```
+
+Turn on get latest cloud service:
+```sh
+ros2 run academy_robot_pointcloud_server depth_to_pointcloud_server \
+  --ros-args -p input_topic:=/camera/depth/points
+```
+Call latest cloud service:
+```sh
+ros2 service call /get_latest_cloud academy_robot_pointcloud_interfaces/srv/GetPointCloud "{}"
+```
+
+

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>academy_robot_pointcloud_server</name>
+  <version>0.1.0</version>
+  <description>Service server that caches the latest PointCloud2 and serves it on request.</description>
+  <maintainer email="dev@example.com">Dev</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>academy_robot_pointcloud_interfaces</depend>
+</package>
