@@ -13,10 +13,10 @@ class DepthToPointCloudService(Node):
 
         self.declare_parameter('depth_topic', '/front_rgbd_camera/depth/image_raw')
         self.declare_parameter('camera_info_topic', '/front_rgbd_camera/depth/camera_info')
-        self.declare_parameter('frame_id', '')      # '' => keep incoming header.frame_id
+        self.declare_parameter('frame_id', '')
         self.declare_parameter('qos_depth', 10)
         self.declare_parameter('z_min', 0.1)
-        self.declare_parameter('z_max', 0.0)        # 0 => no max clamp
+        self.declare_parameter('z_max', 0.0)
 
         depth_topic = self.get_parameter('depth_topic').value
         camera_info_topic = self.get_parameter('camera_info_topic').value
@@ -25,7 +25,6 @@ class DepthToPointCloudService(Node):
         self.z_min = float(self.get_parameter('z_min').value)
         self.z_max = float(self.get_parameter('z_max').value)
 
-        # Sensor-style QoS usually matches camera publishers
         qos = QoSProfile(
             depth=qos_depth,
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
@@ -39,7 +38,6 @@ class DepthToPointCloudService(Node):
         self.latest_stamp: Time = Time()
         self.camera_info: CameraInfo | None = None
 
-        # Precomputed pixel grid
         self._u = None
         self._v = None
 

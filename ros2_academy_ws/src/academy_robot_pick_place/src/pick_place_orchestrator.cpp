@@ -9,7 +9,6 @@
 #include "academy_robot_approach_screw/action/approach_screw.hpp"
 #include "academy_robot_pose_interfaces/srv/get_screw_pose.hpp"
 
-// MoveIt2
 #include <moveit/move_group_interface/move_group_interface.h>
 
 using namespace std::chrono_literals;
@@ -22,7 +21,6 @@ public:
 
   PickPlaceOrchestrator() : Node("pick_place_orchestrator")
   {
-    // Parameters
     stop_distance_ = this->declare_parameter<double>("stop_distance", 0.35);
     forward_speed_ = this->declare_parameter<double>("max_forward_speed", 0.15);
     timeout_sec_ = this->declare_parameter<double>("approach_timeout", 30.0);
@@ -35,7 +33,6 @@ public:
     approach_client_ = rclcpp_action::create_client<ApproachScrew>(shared_from_this(), "approach_screw");
     pose_client_ = this->create_client<GetScrewPose>("get_screw_pose");
 
-    // MoveIt setup
     arm_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(shared_from_this(), "ur_arm");
     gripper_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(shared_from_this(), "hand");
 
@@ -43,7 +40,6 @@ public:
   }
 
   void runOnce() {
-    // 1) Approach
     if (!approach_client_->wait_for_action_server(2s)) {
       RCLCPP_ERROR(get_logger(), "Approach action unavailable.");
       return;
@@ -79,7 +75,6 @@ public:
     }
     RCLCPP_INFO(get_logger(), "Approach success. Final distance: %.3f m", res.result->final_distance);
 
-    // 2) Get screw pose
     if (!pose_client_->wait_for_service(2s)) {
       RCLCPP_ERROR(get_logger(), "GetScrewPose service unavailable");
       return;
@@ -98,32 +93,25 @@ public:
     geometry_msgs::msg::PoseStamped target = pose_res->pose;
     RCLCPP_INFO(get_logger(), "Got screw pose in frame %s", target.header.frame_id.c_str());
 
-    // 3) Simple pick and place motions (adjust to your MoveIt config/group names and grasp approach)
-    // Open gripper
     (void)gripper_group_->setNamedTarget("open");
     gripper_group_->move();
 
-    // Move above the screw (add an offset)
     geometry_msgs::msg::PoseStamped above = target;
     above.pose.position.z += 0.10; // 10 cm approach
     arm_group_->setPoseTarget(above);
     arm_group_->move();
 
-    // Descend to grasp
     geometry_msgs::msg::PoseStamped grasp = target;
     grasp.pose.position.z += 0.01; // allow slight clearance
     arm_group_->setPoseTarget(grasp);
     arm_group_->move();
 
-    // Close gripper
     (void)gripper_group_->setNamedTarget("close");
     gripper_group_->move();
 
-    // Lift up
     arm_group_->setPoseTarget(above);
     arm_group_->move();
 
-    // Place at a predefined location (in 'place_frame')
     geometry_msgs::msg::PoseStamped place;
     place.header.frame_id = place_frame_;
     place.header.stamp = this->get_clock()->now();
@@ -134,7 +122,6 @@ public:
     arm_group_->setPoseTarget(place);
     arm_group_->move();
 
-    // Open gripper to release
     (void)gripper_group_->setNamedTarget("open");
     gripper_group_->move();
 

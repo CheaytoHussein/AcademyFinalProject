@@ -7,7 +7,6 @@ using GetScrewPose = academy_robot_pose_interfaces::srv::GetScrewPose;
 class ScrewPoseService : public rclcpp::Node {
 public:
   ScrewPoseService() : Node("screw_pose_service") {
-    // Latched (transient local) subscriber to match your publisher QoS
     rclcpp::QoS latched_qos(1);
     latched_qos.transient_local().reliable();
     sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(

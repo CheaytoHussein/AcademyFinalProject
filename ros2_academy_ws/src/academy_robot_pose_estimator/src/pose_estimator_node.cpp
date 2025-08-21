@@ -47,22 +47,17 @@ public:
     min_model_pts_  = this->declare_parameter<int>("min_model_pts", 5000);
     max_model_pts_  = this->declare_parameter<int>("max_model_pts", 80000);
 
-    // ROI knobs (wider & optional plane removal)
     roi_min_z_   = this->declare_parameter<double>("roi_min_z", 0.05);
     roi_max_z_   = this->declare_parameter<double>("roi_max_z", 3.0);
     roi_half_xy_ = this->declare_parameter<double>("roi_half_xy", 1.2);
     remove_plane_= this->declare_parameter<bool>("remove_plane", false);
 
-
-    // Publisher: latched pose estimate
     rclcpp::QoS latched_qos(1);
     latched_qos.transient_local().reliable();
     pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("pose_estimate", latched_qos);
 
-    // Service client
     client_ = this->create_client<GetPointCloud>(service_name_);
 
-    // Load model
     if (!loadModel(mesh_path_)) {
       RCLCPP_FATAL(get_logger(), "Failed to load mesh: %s", mesh_path_.c_str());
       throw std::runtime_error("Failed to load mesh");
@@ -92,7 +87,6 @@ private:
     pcl::fromPCLPointCloud2(mesh.cloud, tmp);
     model_raw_ = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(tmp);
 
-    // Downsample model and precompute features
     model_ds_ = voxelDown(model_raw_, std::max(0.01f, static_cast<float>(voxel_leaf_)));
     computeNormalsAndFPFH(model_ds_, model_normals_, model_fpfh_,
                           std::max<float>(2.f * voxel_leaf_, normal_radius_),
@@ -179,9 +173,7 @@ private:
     fe.compute(*fpfh);
   }
 
-  // ===== non-blocking service flow + registration =====
   void tick() {
-    // 1) If we have no in-flight request, send one and return immediately
     if (!has_inflight_) {
       if (!client_->wait_for_service(std::chrono::milliseconds(100))) {
         RCLCPP_WARN_THROTTLE(get_logger(), *this->get_clock(), 2000,
@@ -192,12 +184,10 @@ private:
       inflight_ = client_->async_send_request(req);
       has_inflight_ = true;
       inflight_start_ = now();
-      return; // allow executor to process the response
+      return;
     }
 
-    // 2) A request is in flight: poll without blocking
     if (inflight_.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
-      // timeout guard
       if ((now() - inflight_start_).seconds() > 3.0) {
         RCLCPP_WARN(get_logger(), "Service %s response timeout; restarting request.",
                     service_name_.c_str());
@@ -206,7 +196,6 @@ private:
       return;
     }
 
-    // 3) Got response — consume, clear in-flight, then process
     auto resp = inflight_.get();
     has_inflight_ = false;
 
@@ -216,7 +205,6 @@ private:
       return;
     }
 
-    // Convert & clean
     pcl::PointCloud<pcl::PointXYZ>::Ptr scene(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::fromROSMsg(ros_cloud, *scene);
     std::vector<int> idx;
@@ -224,7 +212,6 @@ private:
 
     clampROI(scene);
 
-    // Downsample with fallback
     float leaf = std::max<float>(0.01f, voxel_leaf_);
     pcl::PointCloud<pcl::PointXYZ>::Ptr scene_ds;
     try {
@@ -239,7 +226,6 @@ private:
       return;
     }
 
-    // Cap size to keep prerejective sane
     if (scene_ds->size() > 120000) {
       std::mt19937 rng{std::random_device{}()};
       std::shuffle(scene_ds->points.begin(), scene_ds->points.end(), rng);
@@ -247,7 +233,6 @@ private:
       scene_ds->width = 120000; scene_ds->height = 1;
     }
 
-    // Features (radii tied to voxel)
     float normal_r   = std::max<float>(2.f * leaf, normal_radius_);
     float feature_r  = std::max<float>(4.f * leaf, feature_radius_);
     pcl::PointCloud<pcl::Normal>::Ptr scene_normals;
@@ -258,7 +243,6 @@ private:
       "Registration input: model_ds=%zu, scene_ds=%zu, leaf=%.3f, nr=%.3f, fr=%.3f",
       model_ds_->size(), scene_ds->size(), leaf, normal_r, feature_r);
 
-    // Global alignment (RANSAC prerejective)
     pcl::SampleConsensusPrerejective<pcl::PointXYZ,pcl::PointXYZ,pcl::FPFHSignature33> align;
     align.setInputSource(model_ds_);
     align.setSourceFeatures(model_fpfh_);
@@ -285,7 +269,6 @@ private:
 
     Eigen::Matrix4f T = align.getFinalTransformation();
 
-    // ICP refinement
     pcl::IterativeClosestPoint<pcl::PointXYZ,pcl::PointXYZ> icp;
     icp.setInputSource(aligned);
     icp.setInputTarget(scene_ds);
@@ -302,7 +285,6 @@ private:
       RCLCPP_WARN(get_logger(), "ICP did not converge, using prerejective pose.");
     }
 
-    // Publish pose
     geometry_msgs::msg::PoseStamped pose;
     pose.header.stamp = now();
     pose.header.frame_id = ros_cloud.header.frame_id;
@@ -324,7 +306,6 @@ private:
   }
 
 private:
-  // Parameters
   std::string service_name_;
   std::string mesh_path_;
   double voxel_leaf_, normal_radius_, feature_radius_;
@@ -334,17 +315,14 @@ private:
   double roi_min_z_, roi_max_z_, roi_half_xy_;
   bool remove_plane_;
 
-  // ROS
   rclcpp::Client<GetPointCloud>::SharedPtr client_;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 
-  // async service state
   std::shared_future<GetPointCloud::Response::SharedPtr> inflight_;
   bool has_inflight_ = false;
   rclcpp::Time inflight_start_;
 
-  // Model data
   pcl::PointCloud<pcl::PointXYZ>::Ptr model_raw_;
   pcl::PointCloud<pcl::PointXYZ>::Ptr model_ds_;
   pcl::PointCloud<pcl::Normal>::Ptr   model_normals_;
@@ -356,7 +334,6 @@ int main(int argc, char** argv) {
   try {
     rclcpp::spin(std::make_shared<PoseEstimatorNode>());
   } catch (const std::exception &e) {
-    // already logged
   }
   rclcpp::shutdown();
   return 0;

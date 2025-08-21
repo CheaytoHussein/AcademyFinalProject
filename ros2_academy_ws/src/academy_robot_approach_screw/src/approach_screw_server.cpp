@@ -24,7 +24,6 @@ public:
 
   ApproachScrewServer() : Node("approach_screw_server")
   {
-    // Parameters
     scan_topic_ = this->declare_parameter<std::string>("scan_topic", "/scan");
     cmd_vel_topic_ = this->declare_parameter<std::string>("cmd_vel_topic", "/cmd_vel");
     window_deg_ = this->declare_parameter<double>("window_deg", 20.0); // +/- 10 deg by default
@@ -49,7 +48,6 @@ public:
   }
 
 private:
-  // Laser window min range ahead
   static double wrapAngle(double a) {
     while (a > M_PI) a -= 2*M_PI;
     while (a < -M_PI) a += 2*M_PI;
@@ -90,12 +88,10 @@ private:
     const double ang_min = wrapAngle(-half);
     const double ang_max = wrapAngle(+half);
 
-    // LaserScan angle 0 is forward in ROS REP-103 (frame dependent). Assume it is forward here.
     double angle = s.angle_min;
     const double inc = s.angle_increment;
     double best = std::numeric_limits<double>::infinity();
     for (size_t i=0; i<s.ranges.size(); ++i, angle += inc) {
-      // map angle into [-pi,pi] for comparison
       double a = wrapAngle(angle);
       bool in_window = (ang_min <= ang_max) ? (a >= ang_min && a <= ang_max)
                                             : (a >= ang_min || a <= ang_max);
@@ -166,7 +162,6 @@ private:
 
       const double remaining = *mr - stop_distance;
 
-      // Send feedback
       ApproachScrew::Feedback fb;
       fb.remaining_distance = static_cast<float>(remaining);
       gh->publish_feedback(std::make_shared<ApproachScrew::Feedback>(fb));
@@ -181,7 +176,6 @@ private:
         return;
       }
 
-      // Simple P controller on speed with clamp
       double v = std::min(vmax, std::max(0.0, kp_ * remaining));
       geometry_msgs::msg::Twist cmd;
       cmd.linear.x = v;
@@ -201,11 +195,9 @@ private:
       rate.sleep();
     }
 
-    // Node shutting down
     stopRobot();
   }
 
-  // Members
   std::string scan_topic_;
   std::string cmd_vel_topic_;
   double window_deg_;

@@ -51,7 +51,7 @@ pcl::PointCloud<pcl::FPFHSignature33>::Ptr computeFPFH(
   est.compute(*feats);
   return feats;
 }
-} // namespace
+}
 
 bool registerModelToScene(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& model,
                           const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& scene,
@@ -60,12 +60,11 @@ bool registerModelToScene(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& model,
                           std::string* dbg) {
   std::ostringstream oss;
 
-  // Clean
   pcl::PointCloud<pcl::PointXYZ>::Ptr model_clean, scene_clean;
   removeNaNs<pcl::PointCloud<pcl::PointXYZ>>(model, model_clean);
   removeNaNs<pcl::PointCloud<pcl::PointXYZ>>(scene, scene_clean);
 
-  // Downsample
+
   auto model_ds = voxelDown(model_clean, p.voxel_leaf);
   auto scene_ds = voxelDown(scene_clean, p.voxel_leaf);
   oss << "Model points (ds): " << model_ds->size() << ", Scene points (ds): " << scene_ds->size() << "\n";
@@ -75,15 +74,12 @@ bool registerModelToScene(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& model,
     return false;
   }
 
-  // Normals
   auto model_n = estimateNormals(model_ds, p.normal_radius);
   auto scene_n = estimateNormals(scene_ds, p.normal_radius);
 
-  // Features
   auto model_f = computeFPFH(model_ds, model_n, p.feature_radius);
   auto scene_f = computeFPFH(scene_ds, scene_n, p.feature_radius);
 
-  // RANSAC-based prerejective alignment
   pcl::SampleConsensusPrerejective<pcl::PointXYZ, pcl::PointXYZ, pcl::FPFHSignature33> align;
   align.setInputSource(model_ds);
   align.setSourceFeatures(model_f);
